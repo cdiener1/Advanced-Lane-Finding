@@ -481,7 +481,26 @@ def findroad(anglein):
     frame = cv2.imread(os.path.join(test_img_dir, test_img))
     blend = process_pipeline(frame)
     cv2.imwrite('output_images/{}'.format(test_img), blend)
+    
+    #fix horizonal offset of camera caused by bike lean
+    
+    radius = 1 #height from ground to camera when bike is upright in meters
+
+    angle = math.radians(anglein)
+
+    sint = math.sin(angle)
+
+    cost = math.cos(angle)
+
+    h = radius*sint #horizontal offset left of right of the camera as the bike tilts
+
+    if abs(h) < .5: #5 is # of cm of horizontal offset allowed before digital correction sets in
+        pass
+    else:
+        offset_meter = offset_meter + h
+
     return mean_curvature_meter, offset_meter
+
     
 def init():
     countdoc = open('numframes.txt', 'w')
@@ -505,21 +524,3 @@ def init():
     sleep(5)#waits 3 seconds for CamDesk to open
     pyautogui.hotkey('fn', 'f11')
     pyautogui.moveTo(1366, 768)#moves mouse out of the visible computer screen (on a screeen with 1366 by 768 resolution) 
-
-def camtiltfix(anglein):
-    radius = 1 #height from ground to camera when bike is upright in meters
-
-    angle = math.radians(anglein)
-
-    sint = math.sin(angle)
-
-    cost = math.cos(angle)
-
-    h = radius*sint #horizontal offset left of right of the camera as the bike tilts
-
-    v = radius-radius*cost #lowering of the camera in meters as teh bike tilts
-
-    if abs(h) < .13: #13 is # of cm of horizontal offset allowed before digital correction sets in
-        return "None"
-    else:
-        return h, v
